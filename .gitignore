@@ -107,3 +107,4 @@ out/
 dist/
 .vscode-test/
 *.vsix
+vscode.d.ts
