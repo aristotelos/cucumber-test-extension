@@ -16,23 +16,17 @@ Seamlessly integrates with Visual Studio Code new Test Runner showing all files 
 
 ### Test Result in `.feature` files
 
----
-
-Now you can view which steps passed or failed directly in your `.feature` files, and with the help of the official Cucumber extension you can Ctrl + click to navigate to your failing step.
+You can view which steps passed or failed directly in your `.feature` files, and with the help of the official Cucumber extension you can Ctrl + click to navigate to your failing step.
 
 ![Feature file screenshot](docs/images/feature.png)
 
 ### Inline error details
-
----
 
 After running the test you will see an inline report of the failing tests with extensive details of the error and an history of test results.
 
 ![Inline errors screenshot](docs/images/inline-errors.png)
 
 ### Debug an entire feature or a single scenario
-
----
 
 You can even debug your tests directly from the Test Runner UI, just click the `Debug Test` action on a Feature or a Scenario!
 
@@ -46,7 +40,7 @@ We support searching and filtering tests by @Tag (Thanks to psethwick)
 
 ### Override environment variables
 
-Now you can specify environment variables in your `settings.json` file, so that when you run your tests those variables will be defined.
+You can specify environment variables in your `settings.json` file, so that when you run your tests those variables will be defined.
 
 ```json
 {
@@ -59,7 +53,7 @@ Now you can specify environment variables in your `settings.json` file, so that 
 
 ### Custom cucumber profile
 
-Now you can select a profile to run the tests
+You can select a profile to run the tests
 
 ```javascript
 const common = {
@@ -109,11 +103,10 @@ You can set the current working directory to cucumber and still have the test ex
 }
 ```
 
-### Better Error detection and reporting
+### Error detection and reporting
 
-Now the extension detects and reports errors in before and after hooks.
+The extension detects and reports errors in before and after hooks.
 If possible it reports a problem directly at the line where the error occurred in the source file.
-The support is still limited, stay tuned for the next updates.
 
 ## Prerequisites
 
