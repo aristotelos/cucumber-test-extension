@@ -352,6 +352,8 @@ export class TestRunner {
                         continue;
                     }
 
+                    this.logChannel.appendLine(`Error: step failed with status ${stepResult.status} and message ${stepResult.message} and exception ${stepResult.exception}`);
+
                     const range = new vscode.Range(hook.sourceReference.location!.line, hook.sourceReference.location?.column ?? 0, hook.sourceReference.location!.line, 100);
                     const fullUri = workspace.uri.toString() + "/" + this.fixUri(hook.sourceReference.uri!);
                     handleError(stepResult, feature, fullUri, range, options, this.diagnosticCollection);
@@ -426,40 +428,47 @@ export class TestRunner {
                 const testCaseFinished = objectData.testCaseFinished;
                 const testCase = this.testCaseStartedToTestCase.get(testCaseFinished.testCaseStartedId);
                 if (!testCase) {
+                    this.logChannel.appendLine(`Error: No test case found for finished test case ID ${testCaseFinished.testCaseStartedId}`);
                     continue;
                 }
 
                 const pickle = this.picklesIndex.get(testCase.pickleId);
                 if (!pickle) {
+                    this.logChannel.appendLine(`Error: No pickle found for finished test case pickle ID ${testCase.pickleId}`);
                     continue;
                 }
 
                 const data = this.runnerData.get(this.fixUri(pickle.uri!));
                 if (!data) {
+                    this.logChannel.appendLine(`Error: No data found for finished test case pickle URI ${pickle.uri}`);
                     continue;
                 }
 
                 const scenarioId = pickle.astNodeIds[0];
-                const scenario = data.feature.children.find((c) => {
+                const scenario = data.feature.children.find((c: any) => {
                     if (!c.scenario) {
                         return false;
                     }
                     return c.scenario.id === scenarioId;
                 });
                 if (!scenario || !scenario.scenario) {
+                    this.logChannel.appendLine(`Error: No scenario found for finished test case scenario ID ${scenarioId}`);
                     continue;
                 }
 
                 const featureExpectedId = `${data!.uri}/${scenario.scenario.location.line}`;
                 const feature = items.find((i) => i.id === featureExpectedId);
                 if (!feature) {
+                    this.logChannel.appendLine(`Error: No feature found for finished test case feature ID ${featureExpectedId}`);
                     continue;
                 }
 
                 const errors = this.testCaseErrors.get(testCase.id) ?? 0;
                 if (errors > 0) {
+                    this.logChannel.appendLine(`Feature with ID ${featureExpectedId} failed with ${errors} errors`);
                     options.failed(feature, new vscode.TestMessage("One or more steps failed"));
                 } else {
+                    this.logChannel.appendLine(`Feature with ID ${featureExpectedId} succeeded`);
                     options.passed(feature);
                 }
 
