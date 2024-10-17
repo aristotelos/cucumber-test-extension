@@ -3,15 +3,15 @@
     "displayName": "CucumberJS Test Runner",
     "description": "Allow to discover, run and debug cucumber-js tests",
     "version": "0.6.0",
-    "publisher": "balrog994",
+    "publisher": "aristotelos",
     "license": "MIT",
     "icon": "docs/images/logo.png",
     "repository": {
         "type": "git",
-        "url": "https://github.com/Balrog994/cucumber-test-runner"
+        "url": "https://github.com/aristotelos/cucumber-test-runner"
     },
     "bugs": {
-        "url": "https://github.com/Balrog994/cucumber-test-runner/issues"
+        "url": "https://github.com/aristotelos/cucumber-test-runner/issues"
     },
     "engines": {
         "vscode": "^1.68.0"
@@ -58,8 +58,9 @@
         "pretest": "npm run test-compile && npm run lint",
         "lint": "eslint src --ext ts",
         "test": "node ./out/test/runTest.js",
-        "download-api": "vscode-dts main && vscode-dts dev",
-        "postinstall": "npm run download-api"
+        "download-api": "npx vscode-dts main && npx vscode-dts dev",
+        "postinstall": "npm run download-api",
+        "deploy": "vsce publish"
     },
     "devDependencies": {
         "@types/glob": "^8.0.1",
@@ -67,16 +68,16 @@
         "@types/node": "16.x",
         "@typescript-eslint/eslint-plugin": "^5.49.0",
         "@typescript-eslint/parser": "^5.49.0",
+        "@vscode/dts": "^0.4.1",
         "@vscode/test-electron": "^2.2.2",
+        "@vscode/vsce": "^3.1.1",
         "esbuild": "^0.17.15",
         "eslint": "^8.33.0",
         "glob": "^8.1.0",
         "mocha": "^10.1.0",
-        "typescript": "^4.9.4",
-        "vscode-dts": "^0.3.3"
+        "typescript": "^4.9.4"
     },
     "dependencies": {
-        "@cucumber/cucumber": "^8.10.0",
         "@cucumber/gherkin": "^26.0.3",
         "@cucumber/messages": "^21.0.1",
         "@rauschma/stringio": "^1.4.0"
