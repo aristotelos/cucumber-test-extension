@@ -1,6 +1,6 @@
 # ![Logo](docs/images/logo.png) CucumberJS Test Runner
 
-[![build](https://github.com/aristotelos/cucumber-test-runner/actions/workflows/node.js.yml/badge.svg)](https://github.com/aristotelos/cucumber-test-runner/actions/workflows/node.js.yml)
+[![build](https://github.com/aristotelos/cucumber-test-extension/actions/workflows/node.js.yml/badge.svg)](https://github.com/aristotelos/cucumber-test-extension/actions/workflows/node.js.yml)
 
 This extension integrates CucumberJS with Visual Studio Code Test Runner.
 
