@@ -44,7 +44,7 @@ You can specify environment variables in your `settings.json` file, so that when
 
 ```json
 {
-    "cucumberTestRunner.env": {
+    "cucumberTestExtension.env": {
         "MY_VARIABLE_1": "foo",
         "MY_VARIABLE_2": "bar"
     }
@@ -75,7 +75,7 @@ module.exports = {
 
 ```json
 {
-    "cucumberTestRunner.profile": "customProfile"
+    "cucumberTestExtension.profile": "customProfile"
 }
 ```
 
@@ -99,7 +99,7 @@ You can set the current working directory to cucumber and still have the test ex
 
 ```json
 {
-    "cucumberTestRunner.cwd": "./specs"
+    "cucumberTestExtension.cwd": "./specs"
 }
 ```
 

@@ -28,19 +28,19 @@
     "contributes": {
         "commands": [],
         "configuration": {
-            "title": "Cucumber Test Runner",
+            "title": "Cucumber Test Extension",
             "properties": {
-                "cucumberTestRunner.env": {
+                "cucumberTestExtension.env": {
                     "type": "object",
                     "default": {},
                     "description": "An object defining environment variables to be used while running tests"
                 },
-                "cucumberTestRunner.profile": {
+                "cucumberTestExtension.profile": {
                     "type": "string",
                     "default": "",
                     "description": "The name of the cucumber-js configuration profile to use to run tests"
                 },
-                "cucumberTestRunner.cwd": {
+                "cucumberTestExtension.cwd": {
                     "type": "string",
                     "default": null,
                     "description": "The working directory to use when running tests. If not specified, the workspace root will be used"
