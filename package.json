@@ -43,7 +43,12 @@
                 "cucumberTestExtension.workingDirectory": {
                     "type": "string",
                     "default": null,
-                    "description": "The working directory to use when running tests. If not specified, the workspace root will be used"
+                    "description": "The working directory to use when running tests. If not specified, the `cucumberTestExtension.rootDirectory` or workspace root will be used"
+                },
+                "cucumberTestExtension.rootDirectory": {
+                    "type": "string",
+                    "default": null,
+                    "description": "The root directory where Cucumber JS is installed in `node_modules`. If not specified, the workspace root will be used"
                 }
             }
         }

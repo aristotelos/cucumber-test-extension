@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fix setting prefix from `cucumberTestRunner` to `cucumberTestExtension`
 - Rename setting `cwd` to `workingDirectory` for better understanding
+- Add `rootDirectory` setting to be able to configure the path to the `node_modules` where Cucumber JS is installed
 
 ## [0.6.2]
 

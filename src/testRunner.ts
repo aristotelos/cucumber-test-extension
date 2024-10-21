@@ -191,17 +191,17 @@ export class TestRunner {
         const adapterConfig = vscode.workspace.getConfiguration("cucumberTestRunner", workspace.uri);
         const env = this.getEnvironmentVariables(adapterConfig);
 
-        const cwd = this.getRunnerWorkingDirectory(workspace, adapterConfig);
-        this.logChannel.appendLine(`Working Directory: ${cwd}`);
+        const workingDirectory = this.getRunnerWorkingDirectory(workspace, adapterConfig);
+        this.logChannel.appendLine(`Working Directory: ${workingDirectory}`);
 
         const profileOptions = this.getProfileOptions(adapterConfig);
 
         const debugOptions = debug ? ["--inspect-brk=9229"] : [];
 
-        const cucumberjsPath = path.normalize(path.join(this.normalizeDriveLetter(workspace.uri.fsPath), "node_modules/@cucumber/cucumber/bin/cucumber.js"));
+        const cucumberjsPath = path.normalize(path.join(this.getRunnerRootDirectory(workspace, adapterConfig), "node_modules/@cucumber/cucumber/bin/cucumber.js"));
 
         const cucumberProcess = spawn(`node`, [...debugOptions, cucumberjsPath, ...itemsOptions, "--format", "message", ...profileOptions], {
-            cwd,
+            cwd: workingDirectory,
             env,
         });
 
@@ -538,6 +538,11 @@ export class TestRunner {
 
     private getRunnerWorkingDirectory(workspace: vscode.WorkspaceFolder, settings: vscode.WorkspaceConfiguration) {
         const cwd = settings.get<string | undefined>("workingDirectory");
-        return cwd ? path.normalize(path.join(this.normalizeDriveLetter(workspace.uri.fsPath), cwd)) : this.normalizeDriveLetter(workspace.uri.fsPath);
+        return cwd ? path.normalize(path.join(this.normalizeDriveLetter(workspace.uri.fsPath), cwd)) : this.getRunnerRootDirectory(workspace, settings);
+    }
+
+    private getRunnerRootDirectory(workspace: vscode.WorkspaceFolder, settings: vscode.WorkspaceConfiguration) {
+        const configuredPath = settings.get<string | undefined>("rootDirectory");
+        return configuredPath ? configuredPath : this.normalizeDriveLetter(workspace.uri.fsPath);
     }
 }

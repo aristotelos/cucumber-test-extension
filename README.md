@@ -103,6 +103,31 @@ You can set the current working directory to cucumber and still have the test ex
 }
 ```
 
+### Set root directory
+
+The Cucumber JS tool is expected to be present in the `node_modules` directory. If you are using `node_modules` only for your specs, it may be in a subdirectory, for example:
+
+```tree
+├── x
+├── y
+├── specs
+│   ├── features
+│   ├── node_modules
+│   ├── steps
+│   ├── cucumber.yml
+│   ├── package.json
+│   ├── tsconfig.json
+│   ├── ...
+```
+
+You can set the root directory to cucumber and still have the test explorer for your whole application:
+
+```json
+{
+    "cucumberTestExtension.rootDirectory": "./specs"
+}
+```
+
 ### Error detection and reporting
 
 The extension detects and reports errors in before and after hooks.
