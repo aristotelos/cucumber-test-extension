@@ -191,17 +191,17 @@ export class TestRunner {
         const adapterConfig = vscode.workspace.getConfiguration("cucumberTestRunner", workspace.uri);
         const env = this.getEnvironmentVariables(adapterConfig);
 
-        const cwd = this.getRunnerWorkingDirectory(workspace, adapterConfig);
-        this.logChannel.appendLine(`Working Directory: ${cwd}`);
+        const workingDirectory = this.getRunnerWorkingDirectory(workspace, adapterConfig);
+        this.logChannel.appendLine(`Working Directory: ${workingDirectory}`);
 
         const profileOptions = this.getProfileOptions(adapterConfig);
 
         const debugOptions = debug ? ["--inspect-brk=9229"] : [];
 
-        const cucumberjsPath = path.normalize(path.join(this.normalizeDriveLetter(workspace.uri.fsPath), "node_modules/@cucumber/cucumber/bin/cucumber.js"));
+        const cucumberjsPath = path.normalize(path.join(this.getRunnerRootDirectory(workspace, adapterConfig), "node_modules/@cucumber/cucumber/bin/cucumber.js"));
 
         const cucumberProcess = spawn(`node`, [...debugOptions, cucumberjsPath, ...itemsOptions, "--format", "message", ...profileOptions], {
-            cwd,
+            cwd: workingDirectory,
             env,
         });
 
@@ -352,6 +352,8 @@ export class TestRunner {
                         continue;
                     }
 
+                    this.logChannel.appendLine(`Error: step failed with status ${stepResult.status} and message ${stepResult.message} and exception ${stepResult.exception}`);
+
                     const range = new vscode.Range(hook.sourceReference.location!.line, hook.sourceReference.location?.column ?? 0, hook.sourceReference.location!.line, 100);
                     const fullUri = workspace.uri.toString() + "/" + this.fixUri(hook.sourceReference.uri!);
                     handleError(stepResult, feature, fullUri, range, options, this.diagnosticCollection);
@@ -426,40 +428,47 @@ export class TestRunner {
                 const testCaseFinished = objectData.testCaseFinished;
                 const testCase = this.testCaseStartedToTestCase.get(testCaseFinished.testCaseStartedId);
                 if (!testCase) {
+                    this.logChannel.appendLine(`Error: No test case found for finished test case ID ${testCaseFinished.testCaseStartedId}`);
                     continue;
                 }
 
                 const pickle = this.picklesIndex.get(testCase.pickleId);
                 if (!pickle) {
+                    this.logChannel.appendLine(`Error: No pickle found for finished test case pickle ID ${testCase.pickleId}`);
                     continue;
                 }
 
                 const data = this.runnerData.get(this.fixUri(pickle.uri!));
                 if (!data) {
+                    this.logChannel.appendLine(`Error: No data found for finished test case pickle URI ${pickle.uri}`);
                     continue;
                 }
 
                 const scenarioId = pickle.astNodeIds[0];
-                const scenario = data.feature.children.find((c) => {
+                const scenario = data.feature.children.find((c: any) => {
                     if (!c.scenario) {
                         return false;
                     }
                     return c.scenario.id === scenarioId;
                 });
                 if (!scenario || !scenario.scenario) {
+                    this.logChannel.appendLine(`Error: No scenario found for finished test case scenario ID ${scenarioId}`);
                     continue;
                 }
 
                 const featureExpectedId = `${data!.uri}/${scenario.scenario.location.line}`;
                 const feature = items.find((i) => i.id === featureExpectedId);
                 if (!feature) {
+                    this.logChannel.appendLine(`Error: No feature found for finished test case feature ID ${featureExpectedId}`);
                     continue;
                 }
 
                 const errors = this.testCaseErrors.get(testCase.id) ?? 0;
                 if (errors > 0) {
+                    this.logChannel.appendLine(`Feature with ID ${featureExpectedId} failed with ${errors} errors`);
                     options.failed(feature, new vscode.TestMessage("One or more steps failed"));
                 } else {
+                    this.logChannel.appendLine(`Feature with ID ${featureExpectedId} succeeded`);
                     options.passed(feature);
                 }
 
@@ -528,7 +537,12 @@ export class TestRunner {
     }
 
     private getRunnerWorkingDirectory(workspace: vscode.WorkspaceFolder, settings: vscode.WorkspaceConfiguration) {
-        const cwd = settings.get<string | undefined>("cwd");
-        return cwd ? path.normalize(path.join(this.normalizeDriveLetter(workspace.uri.fsPath), cwd)) : this.normalizeDriveLetter(workspace.uri.fsPath);
+        const cwd = settings.get<string | undefined>("workingDirectory");
+        return cwd ? path.normalize(path.join(this.normalizeDriveLetter(workspace.uri.fsPath), cwd)) : this.getRunnerRootDirectory(workspace, settings);
+    }
+
+    private getRunnerRootDirectory(workspace: vscode.WorkspaceFolder, settings: vscode.WorkspaceConfiguration) {
+        const configuredPath = settings.get<string | undefined>("rootDirectory");
+        return configuredPath ? configuredPath : this.normalizeDriveLetter(workspace.uri.fsPath);
     }
 }

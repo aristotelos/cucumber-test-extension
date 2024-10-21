@@ -44,7 +44,7 @@ You can specify environment variables in your `settings.json` file, so that when
 
 ```json
 {
-    "cucumberTestRunner.env": {
+    "cucumberTestExtension.env": {
         "MY_VARIABLE_1": "foo",
         "MY_VARIABLE_2": "bar"
     }
@@ -75,7 +75,7 @@ module.exports = {
 
 ```json
 {
-    "cucumberTestRunner.profile": "customProfile"
+    "cucumberTestExtension.profile": "customProfile"
 }
 ```
 
@@ -99,7 +99,32 @@ You can set the current working directory to cucumber and still have the test ex
 
 ```json
 {
-    "cucumberTestRunner.cwd": "./specs"
+    "cucumberTestExtension.workingDirectory": "./specs"
+}
+```
+
+### Set root directory
+
+The Cucumber JS tool is expected to be present in the `node_modules` directory. If you are using `node_modules` only for your specs, it may be in a subdirectory, for example:
+
+```tree
+├── x
+├── y
+├── specs
+│   ├── features
+│   ├── node_modules
+│   ├── steps
+│   ├── cucumber.yml
+│   ├── package.json
+│   ├── tsconfig.json
+│   ├── ...
+```
+
+You can set the root directory to cucumber and still have the test explorer for your whole application:
+
+```json
+{
+    "cucumberTestExtension.rootDirectory": "./specs"
 }
 ```
 
