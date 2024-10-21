@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 - Fix setting prefix from `cucumberTestRunner` to `cucumberTestExtension`
+- Rename setting `cwd` to `workingDirectory` for better understanding
 
 ## [0.6.2]
 

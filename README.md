@@ -99,7 +99,7 @@ You can set the current working directory to cucumber and still have the test ex
 
 ```json
 {
-    "cucumberTestExtension.cwd": "./specs"
+    "cucumberTestExtension.workingDirectory": "./specs"
 }
 ```
 

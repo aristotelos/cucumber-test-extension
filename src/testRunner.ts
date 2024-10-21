@@ -537,7 +537,7 @@ export class TestRunner {
     }
 
     private getRunnerWorkingDirectory(workspace: vscode.WorkspaceFolder, settings: vscode.WorkspaceConfiguration) {
-        const cwd = settings.get<string | undefined>("cwd");
+        const cwd = settings.get<string | undefined>("workingDirectory");
         return cwd ? path.normalize(path.join(this.normalizeDriveLetter(workspace.uri.fsPath), cwd)) : this.normalizeDriveLetter(workspace.uri.fsPath);
     }
 }

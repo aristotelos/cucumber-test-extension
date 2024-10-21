@@ -40,7 +40,7 @@
                     "default": "",
                     "description": "The name of the cucumber-js configuration profile to use to run tests"
                 },
-                "cucumberTestExtension.cwd": {
+                "cucumberTestExtension.workingDirectory": {
                     "type": "string",
                     "default": null,
                     "description": "The working directory to use when running tests. If not specified, the workspace root will be used"
