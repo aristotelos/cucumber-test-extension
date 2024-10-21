@@ -76,7 +76,7 @@
         "@vscode/dts": "^0.4.1",
         "@vscode/test-electron": "^2.2.2",
         "@vscode/vsce": "^3.1.1",
-        "esbuild": "^0.17.15",
+        "esbuild": "^0.24.0",
         "eslint": "^8.33.0",
         "glob": "^8.1.0",
         "mocha": "^10.7.3",
