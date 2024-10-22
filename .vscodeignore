@@ -4,14 +4,12 @@ out/test/**
 out/**/*.map
 src/**
 .gitignore
-.yarnrc
 *.vsix
 vsc-extension-quickstart.md
 **/tsconfig.json
 **/.eslintrc.json
 **/*.map
 **/*.ts
-node_modules
 tsconfig.config
 .prettierrc
 .eslintrc.json
