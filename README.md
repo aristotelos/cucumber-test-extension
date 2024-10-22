@@ -1,4 +1,4 @@
-# ![Logo](docs/images/logo.png) CucumberJS Test Runner
+# ![Logo](docs/images/logo.png) CucumberJS Test Extension
 
 [![build](https://github.com/aristotelos/cucumber-test-extension/actions/workflows/node.js.yml/badge.svg)](https://github.com/aristotelos/cucumber-test-extension/actions/workflows/node.js.yml)
 
