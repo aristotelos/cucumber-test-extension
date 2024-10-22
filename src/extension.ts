@@ -9,13 +9,13 @@ import "./errorHandlers/fluentAssertionsErrorHandler";
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
-    const ctrl = vscode.tests.createTestController("cucumberTestRunnerTests", "Cucumber Tests");
+    const ctrl = vscode.tests.createTestController("cucumberTestExtensionTests", "Cucumber Tests");
     context.subscriptions.push(ctrl);
 
-    const channel = vscode.window.createOutputChannel("Cucumber Test Runner");
+    const channel = vscode.window.createOutputChannel("Cucumber Test Extension");
     context.subscriptions.push(channel);
 
-    const errors = vscode.languages.createDiagnosticCollection("cucumberTestRunnerRuntimeErrors");
+    const errors = vscode.languages.createDiagnosticCollection("cucumberTestExtensionRuntimeErrors");
     context.subscriptions.push(errors);
 
     const fileChangedEmitter = new vscode.EventEmitter<vscode.Uri>();

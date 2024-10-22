@@ -188,7 +188,7 @@ export class TestRunner {
         const workspace = vscode.workspace.workspaceFolders![0];
 
         const itemsOptions = items.map((item) => this.normalizeDriveLetter(item.uri!.fsPath) + ":" + (item.range!.start.line + 1));
-        const adapterConfig = vscode.workspace.getConfiguration("cucumberTestRunner", workspace.uri);
+        const adapterConfig = vscode.workspace.getConfiguration("cucumberTestExtension", workspace.uri);
         const env = this.getEnvironmentVariables(adapterConfig);
 
         const workingDirectory = this.getRunnerWorkingDirectory(workspace, adapterConfig);
