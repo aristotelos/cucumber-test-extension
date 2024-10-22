@@ -24,5 +24,7 @@ See also <https://www.conventionalcommits.org>.
 
 To release, simply create a tag and push it, which will trigger the release automatically:
 
+    git checkout main
+    git pull
     git tag -a v0.1.0-alpha -m "Your tag message"
     git push origin v0.1.0-alpha
