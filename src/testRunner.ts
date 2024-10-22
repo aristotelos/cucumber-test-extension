@@ -543,6 +543,6 @@ export class TestRunner {
 
     private getRunnerRootDirectory(workspace: vscode.WorkspaceFolder, settings: vscode.WorkspaceConfiguration) {
         const configuredPath = settings.get<string | undefined>("rootDirectory");
-        return configuredPath ? configuredPath : this.normalizeDriveLetter(workspace.uri.fsPath);
+        return configuredPath ? path.normalize(path.join(this.normalizeDriveLetter(workspace.uri.fsPath), configuredPath)) : this.normalizeDriveLetter(workspace.uri.fsPath);
     }
 }
