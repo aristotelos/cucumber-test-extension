@@ -44,7 +44,8 @@ export class TestRunner {
     private getStepAndFeatureByTestCaseStartedId(
         items: vscode.TestItem[],
         stepId: string,
-        testCaseStartedId: string
+        testCaseStartedId: string,
+        uriPrefix: string
     ): { step?: vscode.TestItem; feature?: vscode.TestItem; testCase?: TestCaseMessage; stepInScenario?: Step } {
         const testCase = this.testCaseStartedToTestCase.get(testCaseStartedId);
         if (!testCase) {
@@ -71,7 +72,7 @@ export class TestRunner {
         const stepAstId = pickleStep.astNodeIds[0];
 
         //Find step in gherkinDocument
-        const data = this.runnerData.get(this.fixUri(pickle.uri!));
+        const data = this.runnerData.get(uriPrefix + this.fixUri(pickle.uri!));
         if (!data) {
             return {};
         }
@@ -111,7 +112,7 @@ export class TestRunner {
         };
     }
 
-    private getHandleHookStepFinished(items: vscode.TestItem[], stepFinished: TestStepFinished) {
+    private getHandleHookStepFinished(items: vscode.TestItem[], stepFinished: TestStepFinished, uriPrefix: string) {
         const testCase = this.testCaseStartedToTestCase.get(stepFinished.testCaseStartedId);
         if (!testCase) {
             return {};
@@ -134,7 +135,7 @@ export class TestRunner {
             return {};
         }
 
-        const data = this.runnerData.get(this.fixUri(pickle.uri!));
+        const data = this.runnerData.get(uriPrefix + this.fixUri(pickle.uri!));
         if (!data) {
             return {};
         }
@@ -211,7 +212,8 @@ export class TestRunner {
             await this.startDebuggingProcess(cucumberProcess, workspace);
         }
 
-        await Promise.all([this.logStdOutPipe(cucumberProcess.stdout, items, options, workspace), this.logStdErrPipe(cucumberProcess.stderr, items, options)]);
+        const uriPrefix = this.fixUri(workingDirectory.substring(workspace.uri.fsPath.length + 1));
+        await Promise.all([this.logStdOutPipe(cucumberProcess.stdout, items, options, workspace, uriPrefix), this.logStdErrPipe(cucumberProcess.stderr, items, options)]);
 
         this.logChannel.appendLine(`Process exited with code ${cucumberProcess.exitCode}`);
 
@@ -252,11 +254,11 @@ export class TestRunner {
 
     createErrorMessagesFromStdErrorOutput(stdErrorLines: string[]): vscode.TestMessage[] {
         const message = stdErrorLines.join("\n");
-        
-        return [ new vscode.TestMessage(message) ];
+
+        return [new vscode.TestMessage(message)];
     }
 
-    private async logStdOutPipe(pipe: Readable, items: vscode.TestItem[], options: vscode.TestRun, workspace: vscode.WorkspaceFolder) {
+    private async logStdOutPipe(pipe: Readable, items: vscode.TestItem[], options: vscode.TestRun, workspace: vscode.WorkspaceFolder, uriPrefix: string) {
         const pipeName = "stdout";
         for await (const line of chunksToLinesAsync(pipe)) {
             const data = line.trim();
@@ -279,8 +281,8 @@ export class TestRunner {
             }
 
             if (objectData.gherkinDocument) {
-                this.runnerData.set(this.fixUri(objectData.gherkinDocument.uri!), {
-                    uri: this.fixUri(objectData.gherkinDocument.uri!),
+                this.runnerData.set(uriPrefix + this.fixUri(objectData.gherkinDocument.uri!), {
+                    uri: uriPrefix + this.fixUri(objectData.gherkinDocument.uri!),
                     feature: objectData.gherkinDocument.feature!,
                     pickles: [],
                     stepDefinitions: [],
@@ -291,14 +293,14 @@ export class TestRunner {
 
             if (objectData.pickle) {
                 const pickle = objectData.pickle;
-                const data = this.runnerData.get(this.fixUri(pickle.uri));
+                const data = this.runnerData.get(uriPrefix + this.fixUri(pickle.uri));
                 data?.pickles.push(pickle);
                 this.picklesIndex.set(pickle.id, pickle);
             }
 
             if (objectData.stepDefinition) {
                 const stepDefinition = objectData.stepDefinition;
-                const data = this.runnerData.get(this.fixUri(stepDefinition.sourceReference.uri!));
+                const data = this.runnerData.get(uriPrefix + this.fixUri(stepDefinition.sourceReference.uri!));
                 data?.stepDefinitions.push(stepDefinition);
             }
 
@@ -316,7 +318,7 @@ export class TestRunner {
             if (objectData.testCase) {
                 const testCase = objectData.testCase;
                 const pickle = this.picklesIndex.get(testCase.pickleId)!;
-                const data = this.runnerData.get(this.fixUri(pickle.uri!));
+                const data = this.runnerData.get(uriPrefix + this.fixUri(pickle.uri!));
                 data?.testCases.push(testCase);
                 this.testCaseIndex.set(testCase.id, testCase);
                 this.testCasePhase.set(testCase.id, "before");
@@ -339,10 +341,11 @@ export class TestRunner {
                 const { step, feature, stepInScenario, testCase } = this.getStepAndFeatureByTestCaseStartedId(
                     items,
                     testStepFinished.testStepId,
-                    testStepFinished.testCaseStartedId
+                    testStepFinished.testCaseStartedId,
+                    uriPrefix
                 );
                 if (!step || !feature || !stepInScenario || !testCase) {
-                    const { feature, testCase, hook } = this.getHandleHookStepFinished(items, testStepFinished);
+                    const { feature, testCase, hook } = this.getHandleHookStepFinished(items, testStepFinished, uriPrefix);
                     if (!feature || !testCase || !hook) {
                         continue;
                     }
@@ -438,7 +441,7 @@ export class TestRunner {
                     continue;
                 }
 
-                const data = this.runnerData.get(this.fixUri(pickle.uri!));
+                const data = this.runnerData.get(uriPrefix + this.fixUri(pickle.uri!));
                 if (!data) {
                     this.logChannel.appendLine(`Error: No data found for finished test case pickle URI ${pickle.uri}`);
                     continue;
@@ -456,7 +459,7 @@ export class TestRunner {
                     continue;
                 }
 
-                const featureExpectedId = `${data!.uri}/${scenario.scenario.location.line}`;
+                const featureExpectedId = `${data!.uri}/${scenario.scenario.location.line - 1}`;
                 const feature = items.find((i) => i.id === featureExpectedId);
                 if (!feature) {
                     this.logChannel.appendLine(`Error: No feature found for finished test case feature ID ${featureExpectedId}`);
