@@ -177,7 +177,7 @@ export class TestRunner {
         }
     }
 
-    public async run(items: vscode.TestItem[], options: vscode.TestRun, debug: boolean) {
+    public async run(items: vscode.TestItem[], testRun: vscode.TestRun, debug: boolean) {
         this.clearPreviousTestResult();
 
         const workspace = vscode.workspace.workspaceFolders![0];
@@ -210,7 +210,7 @@ export class TestRunner {
         if (uriPrefix !== "" && !uriPrefix.endsWith("/")) {
             uriPrefix = uriPrefix + "/";
         }
-        await Promise.all([this.logStdOutPipe(cucumberProcess.stdout, items, options, workspace, uriPrefix), this.logStdErrPipe(cucumberProcess.stderr, items, options)]);
+        await Promise.all([this.logStdOutPipe(cucumberProcess.stdout, items, testRun, workspace, uriPrefix), this.logStdErrPipe(cucumberProcess.stderr, items, testRun)]);
 
         this.logChannel.appendLine(`Process exited with code ${cucumberProcess.exitCode}`);
 
@@ -255,7 +255,7 @@ export class TestRunner {
         return [new vscode.TestMessage(message)];
     }
 
-    private async logStdOutPipe(pipe: Readable, items: vscode.TestItem[], options: vscode.TestRun, workspace: vscode.WorkspaceFolder, uriPrefix: string) {
+    private async logStdOutPipe(pipe: Readable, items: vscode.TestItem[], testRun: vscode.TestRun, workspace: vscode.WorkspaceFolder, uriPrefix: string) {
         const pipeName = "stdout";
         for await (const line of chunksToLinesAsync(pipe)) {
             const data = line.trim();
@@ -308,7 +308,7 @@ export class TestRunner {
 
             if (objectData.testRunStarted) {
                 for (const item of this.flattenHierarchy(items)) {
-                    options.started(item);
+                    testRun.started(item);
                 }
             }
 
@@ -356,7 +356,7 @@ export class TestRunner {
 
                     const range = new vscode.Range(hook.sourceReference.location!.line, hook.sourceReference.location?.column ?? 0, hook.sourceReference.location!.line, 100);
                     const fullUri = workspace.uri.toString() + "/" + this.fixUri(hook.sourceReference.uri!);
-                    handleError(stepResult, feature, fullUri, range, options, this.diagnosticCollection);
+                    handleError(stepResult, feature, fullUri, range, testRun, this.diagnosticCollection);
 
                     let errorsCount = this.testCaseErrors.get(testCase.id) ?? 0;
                     this.testCaseErrors.set(testCase.id, errorsCount + 1);
@@ -394,7 +394,7 @@ export class TestRunner {
                                 msg.message += `Then('${stepInScenario.text}', function () {\n  return 'pending';\n});`;
                             }
 
-                            options.errored(step, msg, stepResult.duration.nanos / 1000000);
+                            testRun.errored(step, msg, stepResult.duration.nanos / 1000000);
 
                             let errorsCount = this.testCaseErrors.get(testCase.id) ?? 0;
                             this.testCaseErrors.set(testCase.id, errorsCount + 1);
@@ -403,12 +403,12 @@ export class TestRunner {
                     case TestStepResultStatus.PASSED:
                         {
                             //Convert nanoseconds to milliseconds
-                            options.passed(step, stepResult.duration.nanos / 1000000);
+                            testRun.passed(step, stepResult.duration.nanos / 1000000);
                         }
                         break;
                     case TestStepResultStatus.FAILED:
                         {
-                            handleError(stepResult, step, step.uri!.toString(), step.range!, options, this.diagnosticCollection);
+                            handleError(stepResult, step, step.uri!.toString(), step.range!, testRun, this.diagnosticCollection);
 
                             let errorsCount = this.testCaseErrors.get(testCase.id) ?? 0;
                             this.testCaseErrors.set(testCase.id, errorsCount + 1);
@@ -416,7 +416,7 @@ export class TestRunner {
                         break;
                     case TestStepResultStatus.SKIPPED:
                         {
-                            options.skipped(step);
+                            testRun.skipped(step);
                         }
                         break;
                     default:
@@ -466,13 +466,13 @@ export class TestRunner {
                 const errors = this.testCaseErrors.get(testCase.id) ?? 0;
                 if (errors > 0) {
                     this.logChannel.appendLine(`Feature with ID ${featureExpectedId} failed with ${errors} errors`);
-                    options.failed(feature, new vscode.TestMessage("One or more steps failed"));
+                    testRun.failed(feature, new vscode.TestMessage("One or more steps failed"));
                 } else {
                     this.logChannel.appendLine(`Feature with ID ${featureExpectedId} succeeded`);
-                    options.passed(feature);
+                    testRun.passed(feature);
                 }
 
-                options.end();
+                testRun.end();
             }
         }
     }
