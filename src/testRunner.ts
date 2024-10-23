@@ -5,6 +5,7 @@ import { TestStepResultStatus, TestCase as TestCaseMessage, StepDefinition, Pick
 import { handleError } from "./errorHandlers/testRunErrorHandler";
 import path = require("path");
 import { Readable } from "stream";
+import { normalizeDriveLetter } from "./util";
 
 type RunnerData = {
     uri: string;
@@ -14,13 +15,6 @@ type RunnerData = {
     hooks: Hook[];
     testCases: TestCaseMessage[];
 };
-
-const enum CharCode {
-    upperA = 65,
-    upperZ = 90,
-    a = 91,
-    z = 122,
-}
 
 export class TestRunner {
     private runnerData = new Map<string, RunnerData>();
@@ -188,7 +182,7 @@ export class TestRunner {
 
         const workspace = vscode.workspace.workspaceFolders![0];
 
-        const itemsOptions = items.map((item) => this.normalizeDriveLetter(item.uri!.fsPath) + ":" + (item.range!.start.line + 1));
+        const itemsOptions = items.map((item) => normalizeDriveLetter(item.uri!.fsPath) + ":" + (item.range!.start.line + 1));
         const adapterConfig = vscode.workspace.getConfiguration("cucumberTestExtension", workspace.uri);
         const env = this.getEnvironmentVariables(adapterConfig);
 
@@ -527,21 +521,6 @@ export class TestRunner {
         return profileOptions;
     }
 
-    private hasDriveLetter(path: string): boolean {
-        const char0 = path.charCodeAt(0);
-        return ((char0 >= CharCode.upperA && char0 <= CharCode.upperZ) || (char0 >= CharCode.a && char0 <= CharCode.z)) && path.charAt(1) === ":";
-    }
-
-    /// Ensures Windows drive letters are uppercase, because Node requires that
-    /// See https://github.com/Microsoft/vscode/issues/42159
-    private normalizeDriveLetter(path: string): string {
-        if (process.platform === "win32" && this.hasDriveLetter(path)) {
-            return path.charAt(0).toUpperCase() + path.slice(1);
-        }
-
-        return path;
-    }
-
     private getRunnerWorkingDirectory(workspace: vscode.WorkspaceFolder, settings: vscode.WorkspaceConfiguration) {
         const cwd = settings.get<string | undefined>("workingDirectory");
         return cwd ? path.normalize(path.join(this.getRunnerRootDirectory(workspace, settings), cwd)) : this.getRunnerRootDirectory(workspace, settings);
@@ -549,6 +528,6 @@ export class TestRunner {
 
     private getRunnerRootDirectory(workspace: vscode.WorkspaceFolder, settings: vscode.WorkspaceConfiguration) {
         const configuredPath = settings.get<string | undefined>("rootDirectory");
-        return configuredPath ? path.normalize(path.join(this.normalizeDriveLetter(workspace.uri.fsPath), configuredPath)) : this.normalizeDriveLetter(workspace.uri.fsPath);
+        return configuredPath ? path.normalize(path.join(normalizeDriveLetter(workspace.uri.fsPath), configuredPath)) : normalizeDriveLetter(workspace.uri.fsPath);
     }
 }
