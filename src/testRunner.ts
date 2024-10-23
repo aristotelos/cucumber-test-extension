@@ -183,7 +183,7 @@ export class TestRunner {
         }
     }
 
-    async run(items: vscode.TestItem[], options: vscode.TestRun, debug: boolean) {
+    public async run(items: vscode.TestItem[], options: vscode.TestRun, debug: boolean) {
         this.clearPreviousTestResult();
 
         const workspace = vscode.workspace.workspaceFolders![0];
@@ -255,7 +255,7 @@ export class TestRunner {
         return errorMessages;
     }
 
-    createErrorMessagesFromStdErrorOutput(stdErrorLines: string[]): vscode.TestMessage[] {
+    private createErrorMessagesFromStdErrorOutput(stdErrorLines: string[]): vscode.TestMessage[] {
         const message = stdErrorLines.join("\n");
 
         return [new vscode.TestMessage(message)];
