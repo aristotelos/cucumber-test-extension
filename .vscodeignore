@@ -9,4 +9,3 @@ vsc-extension-quickstart.md
 tsconfig.json
 .prettierrc
 .eslintrc.json
-*.off
