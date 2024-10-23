@@ -5,6 +5,10 @@ All notable changes to this extension will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.3]
+
+- Fix that the `rootDirectory` and `workingDirectory` did not work properly when not ending with a `/` - they did not report success on the scenario or feature and did not mark steps as done during the test run.
+
 ## [0.7.2]
 
 - Fix error: `Cannot find module '@rauschma/stringio'`

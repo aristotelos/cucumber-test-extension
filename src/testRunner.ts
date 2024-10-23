@@ -212,7 +212,10 @@ export class TestRunner {
             await this.startDebuggingProcess(cucumberProcess, workspace);
         }
 
-        const uriPrefix = this.fixUri(workingDirectory.substring(workspace.uri.fsPath.length + 1));
+        var uriPrefix = this.fixUri(path.relative(workspace.uri.fsPath, workingDirectory));
+        if (uriPrefix !== "" && !uriPrefix.endsWith("/")) {
+            uriPrefix = uriPrefix + "/";
+        }
         await Promise.all([this.logStdOutPipe(cucumberProcess.stdout, items, options, workspace, uriPrefix), this.logStdErrPipe(cucumberProcess.stderr, items, options)]);
 
         this.logChannel.appendLine(`Process exited with code ${cucumberProcess.exitCode}`);
