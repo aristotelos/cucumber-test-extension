@@ -45,7 +45,7 @@ const parseRule = (rule: Rule, events: ParserEvents) => {
     }
 };
 
-export const parseMarkdown = (text: string, events: ParserEvents) => {
+export const parseGherkin = (text: string, events: ParserEvents) => {
     const uuidFn = IdGenerator.uuid();
     const builder = new AstBuilder(uuidFn);
     const matcher = new GherkinClassicTokenMatcher();

@@ -1,12 +1,12 @@
 import { TextDecoder } from "util";
 import * as vscode from "vscode";
-import { parseMarkdown } from "./parser";
+import { parseGherkin } from "./parser";
 
 const textDecoder = new TextDecoder("utf-8");
 
-export type MarkdownTestData = TestFile | TestHeading | TestCase | TestStep;
+export type GherkinTestData = TestFile | TestHeading | TestCase | TestStep;
 
-export const testData = new WeakMap<vscode.TestItem, MarkdownTestData>();
+export const testData = new WeakMap<vscode.TestItem, GherkinTestData>();
 
 let generationCounter = 0;
 
@@ -49,7 +49,7 @@ export class TestFile {
             }
         };
 
-        parseMarkdown(content, {
+        parseGherkin(content, {
             onStep: (range, name, tags) => {
                 const parent = ancestors[ancestors.length - 1];
                 const scenario = parent.children[parent.children.length - 1];
