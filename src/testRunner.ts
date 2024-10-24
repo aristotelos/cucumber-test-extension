@@ -205,7 +205,7 @@ export class TestRunner {
         this.logChannel.appendLine(`Started Process ${cucumberProcess.spawnfile}:    ${cucumberProcess.spawnargs}`);
 
         if (debug) {
-            await this.startDebuggingProcess(cucumberProcess, workspace);
+            await this.startDebuggingProcess(cucumberProcess, workspace, rootDirectory);
         }
 
         var uriPrefix = this.fixUri(path.relative(workspace.uri.fsPath, workingDirectory));
@@ -479,7 +479,7 @@ export class TestRunner {
         }
     }
 
-    private async startDebuggingProcess(cucumberProcess: ChildProcessWithoutNullStreams, workspace: vscode.WorkspaceFolder) {
+    private async startDebuggingProcess(cucumberProcess: ChildProcessWithoutNullStreams, workspace: vscode.WorkspaceFolder, rootDirectory: string) {
         for await (const line of chunksToLinesAsync(cucumberProcess.stderr)) {
             if (line.startsWith("Debugger listening on ws://")) {
                 const url = line.substring("Debugger listening on ws://".length);
@@ -489,11 +489,9 @@ export class TestRunner {
                         request: "attach",
                         name: "Attach to Cucumber",
                         address: url,
-                        localRoot: "${workspaceFolder}",
-                        remoteRoot: "${workspaceFolder}",
                         protocol: "inspector",
                         port: 9230,
-                        skipFiles: ["<node_internals>/**"],
+                        skipFiles: ["<node_internals>/**", path.join(rootDirectory, "node_modules/**")],
                     });
                 }
                 break;

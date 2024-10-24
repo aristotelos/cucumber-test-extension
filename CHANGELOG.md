@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Skip the `node_modules` when debugging, excluding `cucumber.js`.
 - Log the root directory in the output console.
 
 ## [0.7.3]
