@@ -193,7 +193,9 @@ export class TestRunner {
 
         const debugOptions = debug ? ["--inspect-brk=9229"] : [];
 
-        const cucumberjsPath = path.normalize(path.join(this.getRunnerRootDirectory(workspace, adapterConfig), "node_modules/@cucumber/cucumber/bin/cucumber.js"));
+        const rootDirectory = this.getRunnerRootDirectory(workspace, adapterConfig);
+        this.logChannel.appendLine(`Root Directory: ${rootDirectory}`);
+        const cucumberjsPath = path.normalize(path.join(rootDirectory, "node_modules/@cucumber/cucumber/bin/cucumber.js"));
 
         const cucumberProcess = spawn(`node`, [...debugOptions, cucumberjsPath, ...itemsOptions, "--format", "message", ...profileOptions], {
             cwd: workingDirectory,
