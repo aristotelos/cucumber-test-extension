@@ -35,12 +35,12 @@ export class TestRunner {
         }
     }
 
-    private getStepAndFeatureByTestCaseStartedId(
+    private getStepAndScenarioByTestCaseStartedId(
         items: vscode.TestItem[],
         stepId: string,
         testCaseStartedId: string,
         uriPrefix: string
-    ): { step?: vscode.TestItem; feature?: vscode.TestItem; testCase?: TestCaseMessage; stepInScenario?: Step } {
+    ): { step?: vscode.TestItem; scenarioTestItem?: vscode.TestItem; testCase?: TestCaseMessage; stepInScenario?: Step } {
         const testCase = this.testCaseStartedToTestCase.get(testCaseStartedId);
         if (!testCase) {
             return {};
@@ -86,21 +86,21 @@ export class TestRunner {
             return {};
         }
 
-        const featureExpectedId = `${data!.uri}/${scenario.scenario!.location.line - 1}`;
-        const stepExpectedId = `${featureExpectedId}/${stepInScenario.location.line - 1}`;
-        const feature = items.find((item) => item.id === featureExpectedId);
-        if (!feature) {
+        const scenarioTestItemExpectedId = `${data!.uri}/${scenario.scenario!.location.line - 1}`;
+        const stepExpectedId = `${scenarioTestItemExpectedId}/${stepInScenario.location.line - 1}`;
+        const scenarioTestItem = items.find((item) => item.id === scenarioTestItemExpectedId);
+        if (!scenarioTestItem) {
             return {};
         }
 
-        const step = feature.children.get(stepExpectedId);
+        const step = scenarioTestItem.children.get(stepExpectedId);
         if (!step) {
             return {};
         }
 
         return {
             step,
-            feature,
+            scenarioTestItem,
             testCase,
             stepInScenario,
         };
@@ -146,14 +146,14 @@ export class TestRunner {
             return {};
         }
 
-        const featureExpectedId = `${data!.uri}/${scenario.scenario!.location.line - 1}`;
-        const feature = items.find((item) => item.id === featureExpectedId);
-        if (!feature) {
+        const scenarioTestItemExpectedId = `${data!.uri}/${scenario.scenario!.location.line - 1}`;
+        const scenarioTestItem = items.find((item) => item.id === scenarioTestItemExpectedId);
+        if (!scenarioTestItem) {
             return {};
         }
 
         return {
-            feature,
+            scenarioTestItem,
             testCase,
             hook,
         };
@@ -337,15 +337,15 @@ export class TestRunner {
                 const testStepFinished = objectData.testStepFinished;
                 const stepResult = testStepFinished.testStepResult;
 
-                const { step, feature, stepInScenario, testCase } = this.getStepAndFeatureByTestCaseStartedId(
+                const { step, scenarioTestItem, stepInScenario, testCase } = this.getStepAndScenarioByTestCaseStartedId(
                     items,
                     testStepFinished.testStepId,
                     testStepFinished.testCaseStartedId,
                     uriPrefix
                 );
-                if (!step || !feature || !stepInScenario || !testCase) {
-                    const { feature, testCase, hook } = this.getHandleHookStepFinished(items, testStepFinished, uriPrefix);
-                    if (!feature || !testCase || !hook) {
+                if (!step || !scenarioTestItem || !stepInScenario || !testCase) {
+                    const { scenarioTestItem, testCase, hook } = this.getHandleHookStepFinished(items, testStepFinished, uriPrefix);
+                    if (!scenarioTestItem || !testCase || !hook) {
                         continue;
                     }
 
@@ -358,7 +358,7 @@ export class TestRunner {
 
                     const range = new vscode.Range(hook.sourceReference.location!.line, hook.sourceReference.location?.column ?? 0, hook.sourceReference.location!.line, 100);
                     const fullUri = workspace.uri.toString() + "/" + this.fixUri(hook.sourceReference.uri!);
-                    handleError(stepResult, feature, fullUri, range, testRun, this.diagnosticCollection);
+                    handleError(stepResult, scenarioTestItem, fullUri, range, testRun, this.diagnosticCollection);
 
                     let errorsCount = this.testCaseErrors.get(testCase.id) ?? 0;
                     this.testCaseErrors.set(testCase.id, errorsCount + 1);
@@ -458,20 +458,20 @@ export class TestRunner {
                     continue;
                 }
 
-                const featureExpectedId = `${data!.uri}/${scenario.scenario.location.line - 1}`;
-                const feature = items.find((i) => i.id === featureExpectedId);
-                if (!feature) {
-                    this.logChannel.appendLine(`Error: No feature found for finished test case feature ID ${featureExpectedId}`);
+                const scenarioTestItemExpectedId = `${data!.uri}/${scenario.scenario.location.line - 1}`;
+                const scenarioTestItem = items.find((i) => i.id === scenarioTestItemExpectedId);
+                if (!scenarioTestItem) {
+                    this.logChannel.appendLine(`Error: No scenario found for finished scenario ID ${scenarioTestItemExpectedId}`);
                     continue;
                 }
 
                 const errors = this.testCaseErrors.get(testCase.id) ?? 0;
                 if (errors > 0) {
-                    this.logChannel.appendLine(`Feature with ID ${featureExpectedId} failed with ${errors} errors`);
-                    testRun.failed(feature, new vscode.TestMessage("One or more steps failed"));
+                    this.logChannel.appendLine(`Scenario with ID ${scenarioTestItemExpectedId} failed with ${errors} errors`);
+                    testRun.failed(scenarioTestItem, new vscode.TestMessage("One or more steps failed"));
                 } else {
-                    this.logChannel.appendLine(`Feature with ID ${featureExpectedId} succeeded`);
-                    testRun.passed(feature);
+                    this.logChannel.appendLine(`Scenario with ID ${scenarioTestItemExpectedId} succeeded`);
+                    testRun.passed(scenarioTestItem);
                 }
 
                 testRun.end();
