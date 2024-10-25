@@ -47,6 +47,37 @@ export class TestRunner {
         }
     }
 
+    private getScenarioByTestCaseStartedId(items: vscode.TestItem[], testCaseStartedId: string, uriPrefix: string): vscode.TestItem | undefined {
+        const testCase = this.testCaseStartedToTestCase.get(testCaseStartedId);
+        if (!testCase) {
+            return undefined;
+        }
+
+        const pickle = this.picklesIndex.get(testCase!.pickleId)!;
+        if (!pickle) {
+            return undefined;
+        }
+
+        const data = this.runnerData.get(uriPrefix + this.fixUri(pickle.uri!));
+        if (!data) {
+            return undefined;
+        }
+
+        const scenarioAstId = pickle.astNodeIds[0];
+        const scenario = data.feature.children.find((scenario) => {
+            if (!scenario.scenario) {
+                return false;
+            }
+            return scenario.scenario.id === scenarioAstId;
+        });
+        if (!scenario) {
+            return undefined;
+        }
+
+        const scenarioTestItemExpectedId = `${data!.uri}/${scenario.scenario!.location.line - 1}`;
+        return items.find((item) => item.id === scenarioTestItemExpectedId);
+    }
+
     private getStepAndScenarioByTestCaseStartedId(
         items: vscode.TestItem[],
         stepId: string,
@@ -173,20 +204,6 @@ export class TestRunner {
 
     private fixUri(uri: string) {
         return uri.replace(/\\/g, "/");
-    }
-
-    private *flattenHierarchyCollection(items: vscode.TestItemCollection): Generator<vscode.TestItem> {
-        for (const item of items) {
-            yield item[1];
-            yield* this.flattenHierarchyCollection(item[1].children);
-        }
-    }
-
-    private *flattenHierarchy(items: vscode.TestItem[]): Generator<vscode.TestItem> {
-        for (const item of items) {
-            yield item;
-            yield* this.flattenHierarchyCollection(item.children);
-        }
     }
 
     public async run(items: vscode.TestItem[], testRun: vscode.TestRun, debug: boolean) {
@@ -329,12 +346,6 @@ export class TestRunner {
                 this.hooksIndex.set(hook.id, hook);
             }
 
-            if (objectData.testRunStarted) {
-                for (const item of this.flattenHierarchy(items)) {
-                    testRun.started(item);
-                }
-            }
-
             if (objectData.testCase) {
                 const testCase = objectData.testCase;
                 const pickle = this.picklesIndex.get(testCase.pickleId)!;
@@ -345,13 +356,27 @@ export class TestRunner {
             }
 
             if (objectData.testCaseStarted) {
-                //Nothing to do
+                // Add to testCaseStartedToTestCase index
                 const testCase = this.testCaseIndex.get(objectData.testCaseStarted.testCaseId)!;
                 this.testCaseStartedToTestCase.set(objectData.testCaseStarted.id, testCase);
+
+                // Set test item started
+                const scenarioTestItem = this.getScenarioByTestCaseStartedId(items, objectData.testCaseStarted.id, uriPrefix);
+                if (!scenarioTestItem) {
+                    this.logChannel.appendLine(`Error: Could not find scenario test item with test case started ID ${objectData.testCaseStarted.id}`);
+                    continue;
+                }
+                testRun.started(scenarioTestItem);
             }
 
             if (objectData.testStepStarted) {
-                //Nothing to do
+                // Set test item started
+                const { step } = this.getStepAndScenarioByTestCaseStartedId(items, objectData.testStepStarted.testStepId, objectData.testStepStarted.testCaseStartedId, uriPrefix);
+                if (!step) {
+                    // Background step or hook
+                    continue;
+                }
+                testRun.started(step);
             }
 
             if (objectData.testStepFinished) {
@@ -454,43 +479,18 @@ export class TestRunner {
                     continue;
                 }
 
-                const pickle = this.picklesIndex.get(testCase.pickleId);
-                if (!pickle) {
-                    this.logChannel.appendLine(`Error: No pickle found for finished test case pickle ID ${testCase.pickleId}`);
-                    continue;
-                }
-
-                const data = this.runnerData.get(uriPrefix + this.fixUri(pickle.uri!));
-                if (!data) {
-                    this.logChannel.appendLine(`Error: No data found for finished test case pickle URI ${pickle.uri}`);
-                    continue;
-                }
-
-                const scenarioId = pickle.astNodeIds[0];
-                const scenario = data.feature.children.find((c: any) => {
-                    if (!c.scenario) {
-                        return false;
-                    }
-                    return c.scenario.id === scenarioId;
-                });
-                if (!scenario || !scenario.scenario) {
-                    this.logChannel.appendLine(`Error: No scenario found for finished test case scenario ID ${scenarioId}`);
-                    continue;
-                }
-
-                const scenarioTestItemExpectedId = `${data!.uri}/${scenario.scenario.location.line - 1}`;
-                const scenarioTestItem = items.find((i) => i.id === scenarioTestItemExpectedId);
+                const scenarioTestItem = this.getScenarioByTestCaseStartedId(items, testCaseFinished.testCaseStartedId, uriPrefix);
                 if (!scenarioTestItem) {
-                    this.logChannel.appendLine(`Error: No scenario found for finished scenario ID ${scenarioTestItemExpectedId}`);
+                    this.logChannel.appendLine(`Error: No scenario found for finished test case ID ${testCaseFinished.testCaseStartedId}`);
                     continue;
                 }
 
                 const errors = this.testCaseErrors.get(testCase.id) ?? 0;
                 if (errors > 0) {
-                    this.logChannel.appendLine(`Scenario with ID ${scenarioTestItemExpectedId} failed with ${errors} errors`);
+                    this.logChannel.appendLine(`Scenario with ID ${scenarioTestItem.id} failed with ${errors} errors`);
                     testRun.failed(scenarioTestItem, new vscode.TestMessage("One or more steps failed"));
                 } else {
-                    this.logChannel.appendLine(`Scenario with ID ${scenarioTestItemExpectedId} succeeded`);
+                    this.logChannel.appendLine(`Scenario with ID ${scenarioTestItem.id} succeeded`);
                     testRun.passed(scenarioTestItem);
                 }
             }
