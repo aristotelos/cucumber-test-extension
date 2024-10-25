@@ -473,7 +473,9 @@ export class TestRunner {
                     this.logChannel.appendLine(`Scenario with ID ${scenarioTestItemExpectedId} succeeded`);
                     testRun.passed(scenarioTestItem);
                 }
+            }
 
+            if (objectData.testRunFinished) {
                 testRun.end();
             }
         }
