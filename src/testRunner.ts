@@ -1,7 +1,19 @@
 import * as vscode from "vscode";
 import { ChildProcessWithoutNullStreams, spawn } from "child_process";
 import { chunksToLinesAsync } from "@rauschma/stringio";
-import { TestStepResultStatus, TestCase as TestCaseMessage, StepDefinition, Pickle, StepKeywordType, Envelope, Hook, Feature, Step, TestStepFinished } from "@cucumber/messages";
+import {
+    TestStepResultStatus,
+    TestCase as TestCaseMessage,
+    StepDefinition,
+    Pickle,
+    StepKeywordType,
+    Envelope,
+    Hook,
+    Feature,
+    Step,
+    TestStepFinished,
+    TestStepResult,
+} from "@cucumber/messages";
 import { handleError } from "./errorHandlers/testRunErrorHandler";
 import path = require("path");
 import { Readable } from "stream";
@@ -405,7 +417,7 @@ export class TestRunner {
                                 msg.message += `Then('${stepInScenario.text}', function () {\n  return 'pending';\n});`;
                             }
 
-                            testRun.errored(step, msg, stepResult.duration.nanos / 1000000);
+                            testRun.errored(step, msg, this.getDurationMilliseconds(stepResult));
 
                             let errorsCount = this.testCaseErrors.get(testCase.id) ?? 0;
                             this.testCaseErrors.set(testCase.id, errorsCount + 1);
@@ -413,8 +425,7 @@ export class TestRunner {
                         break;
                     case TestStepResultStatus.PASSED:
                         {
-                            //Convert nanoseconds to milliseconds
-                            testRun.passed(step, stepResult.duration.nanos / 1000000);
+                            testRun.passed(step, this.getDurationMilliseconds(stepResult));
                         }
                         break;
                     case TestStepResultStatus.FAILED:
@@ -488,6 +499,10 @@ export class TestRunner {
                 testRun.end();
             }
         }
+    }
+
+    private getDurationMilliseconds(stepResult: TestStepResult): number {
+        return stepResult.duration.seconds * 1000 + stepResult.duration.nanos / 1000000;
     }
 
     private async startDebuggingProcess(cucumberProcess: ChildProcessWithoutNullStreams, workspace: vscode.WorkspaceFolder, rootDirectory: string) {
