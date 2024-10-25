@@ -229,12 +229,12 @@ export class TestRunner {
         this.testCaseErrors.clear();
     }
 
-    private async logStdErrPipe(pipe: Readable, items: vscode.TestItem[], options: vscode.TestRun) {
+    private async logStdErrPipe(pipe: Readable, items: vscode.TestItem[], testRun: vscode.TestRun) {
         const stdErrorLines = await this.readLogsFromStdErr(pipe);
         const errorMessages = this.createErrorMessagesFromStdErrorOutput(stdErrorLines);
 
         for (const item of items) {
-            options.errored(item, errorMessages);
+            testRun.errored(item, errorMessages);
         }
     }
 
