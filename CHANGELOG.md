@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Skip the `node_modules` when debugging, excluding `cucumber.js`.
 - Log the root directory in the output console.
 - Fix that the test run finished prematurely when the first scenario finished.
+- Log `world.attach` messages as test output.
 
 ## [0.7.3]
 

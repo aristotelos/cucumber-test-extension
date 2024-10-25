@@ -279,6 +279,15 @@ export class TestRunner {
                 continue;
             }
 
+            if (objectData.attachment && objectData.attachment.mediaType === "text/plain") {
+                let test = undefined;
+                if (objectData.attachment.testStepId && objectData.attachment.testCaseStartedId) {
+                    const { step } = this.getStepAndScenarioByTestCaseStartedId(items, objectData.attachment.testStepId, objectData.attachment.testCaseStartedId, uriPrefix);
+                    test = step;
+                }
+                testRun.appendOutput(objectData.attachment.body + "\r\n", undefined, test);
+            }
+
             if (objectData.gherkinDocument) {
                 this.runnerData.set(uriPrefix + this.fixUri(objectData.gherkinDocument.uri!), {
                     uri: uriPrefix + this.fixUri(objectData.gherkinDocument.uri!),
