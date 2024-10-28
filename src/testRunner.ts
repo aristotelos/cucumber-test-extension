@@ -441,7 +441,7 @@ export class TestRunner {
             this.logChannel.appendLine(`Error: step failed with status ${stepResult.status} and message ${stepResult.message} and exception ${stepResult.exception}`);
 
             const range = new vscode.Range(hook.sourceReference.location!.line, hook.sourceReference.location?.column ?? 0, hook.sourceReference.location!.line, 100);
-            const fullUri = workspace.uri.toString() + "/" + this.fixUri(hook.sourceReference.uri!);
+            const fullUri = workspace.uri.toString() + "/" + uriPrefix + this.fixUri(hook.sourceReference.uri!);
             handleError(stepResult, scenarioTestItem, fullUri, range, testRun, this.diagnosticCollection);
 
             let errorsCount = this.testCaseErrors.get(testCase.id) ?? 0;

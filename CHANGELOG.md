@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Log `world.attach` messages as test output.
 - Fix that the number of seconds the test step took were omitted - only the nanoseconds were counted.
 - Start the test items one by one instead of all at once. Instead, queue all test items but only start the scenario and step that started.
+- Fix that with `rootDirectory` and `workingDirectory`, diagnostics were not reported correctly for `Before` and `After` hooks when they failed.
 
 ## [0.7.3]
 
