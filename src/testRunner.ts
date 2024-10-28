@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { ChildProcessWithoutNullStreams, spawn } from "child_process";
+import { ChildProcess, ChildProcessWithoutNullStreams, spawn } from "child_process";
 import { chunksToLinesAsync } from "@rauschma/stringio";
 import {
     TestStepResultStatus,
@@ -242,11 +242,22 @@ export class TestRunner {
         if (uriPrefix !== "" && !uriPrefix.endsWith("/")) {
             uriPrefix = uriPrefix + "/";
         }
-        await Promise.all([this.logStdOutPipe(cucumberProcess.stdout, items, testRun, workspace, uriPrefix), this.logStdErrPipe(cucumberProcess.stderr, items, testRun)]);
-
-        this.logChannel.appendLine(`Process exited with code ${cucumberProcess.exitCode}`);
+        await Promise.all([
+            this.logStdOutPipe(cucumberProcess.stdout, items, testRun, workspace, uriPrefix),
+            this.logStdErrPipe(cucumberProcess.stderr, items, testRun),
+            this.waitForExit(cucumberProcess),
+        ]);
 
         return { success: cucumberProcess.exitCode === 0 };
+    }
+
+    private async waitForExit(cucumberProcess: ChildProcess): Promise<void> {
+        return new Promise((resolve) => {
+            cucumberProcess.on("close", (code) => {
+                this.logChannel.appendLine(`Process exited with code ${code}`);
+                resolve();
+            });
+        });
     }
 
     private clearPreviousTestResult() {
