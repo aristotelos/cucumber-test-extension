@@ -346,6 +346,10 @@ export class TestRunner {
                 this.hooksIndex.set(hook.id, hook);
             }
 
+            if (objectData.testRunStarted) {
+                this.enqueueAllTestItems(items, testRun);
+            }
+
             if (objectData.testCase) {
                 const testCase = objectData.testCase;
                 const pickle = this.picklesIndex.get(testCase.pickleId)!;
@@ -501,6 +505,12 @@ export class TestRunner {
         }
     }
 
+    private enqueueAllTestItems(items: vscode.TestItem[], testRun: vscode.TestRun) {
+        for (const item of this.flattenHierarchy(items)) {
+            testRun.enqueued(item);
+        }
+    }
+
     private getDurationMilliseconds(stepResult: TestStepResult): number {
         return stepResult.duration.seconds * 1000 + stepResult.duration.nanos / 1000000;
     }
@@ -555,5 +565,19 @@ export class TestRunner {
     private getRunnerRootDirectory(workspace: vscode.WorkspaceFolder, settings: vscode.WorkspaceConfiguration) {
         const configuredPath = settings.get<string | undefined>("rootDirectory");
         return configuredPath ? path.normalize(path.join(normalizeDriveLetter(workspace.uri.fsPath), configuredPath)) : normalizeDriveLetter(workspace.uri.fsPath);
+    }
+
+    private *flattenHierarchy(items: vscode.TestItem[]): Generator<vscode.TestItem> {
+        for (const item of items) {
+            yield item;
+            yield* this.flattenHierarchyCollection(item.children);
+        }
+    }
+
+    private *flattenHierarchyCollection(items: vscode.TestItemCollection): Generator<vscode.TestItem> {
+        for (const item of items) {
+            yield item[1];
+            yield* this.flattenHierarchyCollection(item[1].children);
+        }
     }
 }
