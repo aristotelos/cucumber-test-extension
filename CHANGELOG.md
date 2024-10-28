@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.7.5]
 
 - Fix that all tests should not error when cucumber-js reported anything to `stderr`.
+- Wait for the cucumber-js process to finish and log its exit code correcly.
 
 ## [0.7.4]
 
