@@ -2,7 +2,7 @@
     "name": "cucumber-test-extension",
     "displayName": "CucumberJS Test Extension",
     "description": "Allow to discover, run and debug cucumber-js tests",
-    "version": "0.7.4",
+    "version": "0.7.5",
     "publisher": "aristotelos",
     "license": "MIT",
     "icon": "docs/images/logo.png",
