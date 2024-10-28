@@ -385,94 +385,7 @@ export class TestRunner {
 
             if (objectData.testStepFinished) {
                 const testStepFinished = objectData.testStepFinished;
-                const stepResult = testStepFinished.testStepResult;
-
-                const { step, scenarioTestItem, stepInScenario, testCase } = this.getStepAndScenarioByTestCaseStartedId(
-                    items,
-                    testStepFinished.testStepId,
-                    testStepFinished.testCaseStartedId,
-                    uriPrefix
-                );
-                if (!step || !scenarioTestItem || !stepInScenario || !testCase) {
-                    const { scenarioTestItem, testCase, hook } = this.getHandleHookStepFinished(items, testStepFinished, uriPrefix);
-                    if (!scenarioTestItem || !testCase || !hook) {
-                        continue;
-                    }
-
-                    // Don't send errors for passed steps!
-                    if (stepResult.status === TestStepResultStatus.PASSED) {
-                        continue;
-                    }
-
-                    this.logChannel.appendLine(`Error: step failed with status ${stepResult.status} and message ${stepResult.message} and exception ${stepResult.exception}`);
-
-                    const range = new vscode.Range(hook.sourceReference.location!.line, hook.sourceReference.location?.column ?? 0, hook.sourceReference.location!.line, 100);
-                    const fullUri = workspace.uri.toString() + "/" + this.fixUri(hook.sourceReference.uri!);
-                    handleError(stepResult, scenarioTestItem, fullUri, range, testRun, this.diagnosticCollection);
-
-                    let errorsCount = this.testCaseErrors.get(testCase.id) ?? 0;
-                    this.testCaseErrors.set(testCase.id, errorsCount + 1);
-                    continue;
-                }
-
-                let phase = this.testCasePhase.get(testCase.id)!;
-                switch (stepInScenario.keywordType) {
-                    case StepKeywordType.CONTEXT:
-                        phase = "context";
-                        this.testCasePhase.set(testCase.id, phase);
-                        break;
-                    case StepKeywordType.ACTION:
-                        phase = "action";
-                        this.testCasePhase.set(testCase.id, phase);
-                        break;
-                    case StepKeywordType.OUTCOME:
-                        phase = "outcome";
-                        this.testCasePhase.set(testCase.id, phase);
-                        break;
-                }
-
-                switch (stepResult.status) {
-                    case TestStepResultStatus.UNDEFINED:
-                        {
-                            const msg = new vscode.TestMessage("Undefined. Implement with the following snippet:\n\n");
-
-                            if (stepInScenario.keywordType === StepKeywordType.CONTEXT || (stepInScenario.keywordType === StepKeywordType.CONJUNCTION && phase === "context")) {
-                                msg.message += `Given('${stepInScenario.text}', function () {\n  return 'pending';\n});`;
-                            }
-                            if (stepInScenario.keywordType === StepKeywordType.ACTION || (stepInScenario.keywordType === StepKeywordType.CONJUNCTION && phase === "action")) {
-                                msg.message += `When('${stepInScenario.text}', function () {\n  return 'pending';\n});`;
-                            }
-                            if (stepInScenario.keywordType === StepKeywordType.OUTCOME || (stepInScenario.keywordType === StepKeywordType.CONJUNCTION && phase === "outcome")) {
-                                msg.message += `Then('${stepInScenario.text}', function () {\n  return 'pending';\n});`;
-                            }
-
-                            testRun.errored(step, msg, this.getDurationMilliseconds(stepResult));
-
-                            let errorsCount = this.testCaseErrors.get(testCase.id) ?? 0;
-                            this.testCaseErrors.set(testCase.id, errorsCount + 1);
-                        }
-                        break;
-                    case TestStepResultStatus.PASSED:
-                        {
-                            testRun.passed(step, this.getDurationMilliseconds(stepResult));
-                        }
-                        break;
-                    case TestStepResultStatus.FAILED:
-                        {
-                            handleError(stepResult, step, step.uri!.toString(), step.range!, testRun, this.diagnosticCollection);
-
-                            let errorsCount = this.testCaseErrors.get(testCase.id) ?? 0;
-                            this.testCaseErrors.set(testCase.id, errorsCount + 1);
-                        }
-                        break;
-                    case TestStepResultStatus.SKIPPED:
-                        {
-                            testRun.skipped(step);
-                        }
-                        break;
-                    default:
-                        throw new Error(`Unhandled step result: ${stepResult.status}`);
-                }
+                this.handleTestStepFinished(testStepFinished, items, testRun, workspace, uriPrefix);
             }
 
             if (objectData.testCaseFinished) {
@@ -502,6 +415,97 @@ export class TestRunner {
             if (objectData.testRunFinished) {
                 testRun.end();
             }
+        }
+    }
+
+    private handleTestStepFinished(testStepFinished: TestStepFinished, items: vscode.TestItem[], testRun: vscode.TestRun, workspace: vscode.WorkspaceFolder, uriPrefix: string) {
+        const stepResult = testStepFinished.testStepResult;
+
+        const { step, scenarioTestItem, stepInScenario, testCase } = this.getStepAndScenarioByTestCaseStartedId(
+            items,
+            testStepFinished.testStepId,
+            testStepFinished.testCaseStartedId,
+            uriPrefix
+        );
+        if (!step || !scenarioTestItem || !stepInScenario || !testCase) {
+            const { scenarioTestItem, testCase, hook } = this.getHandleHookStepFinished(items, testStepFinished, uriPrefix);
+            if (!scenarioTestItem || !testCase || !hook) {
+                return;
+            }
+
+            // Don't send errors for passed steps!
+            if (stepResult.status === TestStepResultStatus.PASSED) {
+                return;
+            }
+
+            this.logChannel.appendLine(`Error: step failed with status ${stepResult.status} and message ${stepResult.message} and exception ${stepResult.exception}`);
+
+            const range = new vscode.Range(hook.sourceReference.location!.line, hook.sourceReference.location?.column ?? 0, hook.sourceReference.location!.line, 100);
+            const fullUri = workspace.uri.toString() + "/" + this.fixUri(hook.sourceReference.uri!);
+            handleError(stepResult, scenarioTestItem, fullUri, range, testRun, this.diagnosticCollection);
+
+            let errorsCount = this.testCaseErrors.get(testCase.id) ?? 0;
+            this.testCaseErrors.set(testCase.id, errorsCount + 1);
+            return;
+        }
+
+        let phase = this.testCasePhase.get(testCase.id)!;
+        switch (stepInScenario.keywordType) {
+            case StepKeywordType.CONTEXT:
+                phase = "context";
+                this.testCasePhase.set(testCase.id, phase);
+                break;
+            case StepKeywordType.ACTION:
+                phase = "action";
+                this.testCasePhase.set(testCase.id, phase);
+                break;
+            case StepKeywordType.OUTCOME:
+                phase = "outcome";
+                this.testCasePhase.set(testCase.id, phase);
+                break;
+        }
+
+        switch (stepResult.status) {
+            case TestStepResultStatus.UNDEFINED:
+                {
+                    const msg = new vscode.TestMessage("Undefined. Implement with the following snippet:\n\n");
+
+                    if (stepInScenario.keywordType === StepKeywordType.CONTEXT || (stepInScenario.keywordType === StepKeywordType.CONJUNCTION && phase === "context")) {
+                        msg.message += `Given('${stepInScenario.text}', function () {\n  return 'pending';\n});`;
+                    }
+                    if (stepInScenario.keywordType === StepKeywordType.ACTION || (stepInScenario.keywordType === StepKeywordType.CONJUNCTION && phase === "action")) {
+                        msg.message += `When('${stepInScenario.text}', function () {\n  return 'pending';\n});`;
+                    }
+                    if (stepInScenario.keywordType === StepKeywordType.OUTCOME || (stepInScenario.keywordType === StepKeywordType.CONJUNCTION && phase === "outcome")) {
+                        msg.message += `Then('${stepInScenario.text}', function () {\n  return 'pending';\n});`;
+                    }
+
+                    testRun.errored(step, msg, this.getDurationMilliseconds(stepResult));
+
+                    let errorsCount = this.testCaseErrors.get(testCase.id) ?? 0;
+                    this.testCaseErrors.set(testCase.id, errorsCount + 1);
+                }
+                break;
+            case TestStepResultStatus.PASSED:
+                {
+                    testRun.passed(step, this.getDurationMilliseconds(stepResult));
+                }
+                break;
+            case TestStepResultStatus.FAILED:
+                {
+                    handleError(stepResult, step, step.uri!.toString(), step.range!, testRun, this.diagnosticCollection);
+
+                    let errorsCount = this.testCaseErrors.get(testCase.id) ?? 0;
+                    this.testCaseErrors.set(testCase.id, errorsCount + 1);
+                }
+                break;
+            case TestStepResultStatus.SKIPPED:
+                {
+                    testRun.skipped(step);
+                }
+                break;
+            default:
+                throw new Error(`Unhandled step result: ${stepResult.status}`);
         }
     }
 
