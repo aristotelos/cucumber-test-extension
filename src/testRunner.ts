@@ -36,6 +36,7 @@ export class TestRunner {
     private testCasePhase = new Map<string, "before" | "context" | "action" | "outcome">();
     private testCaseStartedToTestCase = new Map<string, TestCaseMessage>();
     private testCaseErrors = new Map<string, number>();
+    private hasAnyTestCaseStarted = false;
 
     constructor(private logChannel: vscode.OutputChannel, private diagnosticCollection: vscode.DiagnosticCollection) {}
 
@@ -256,14 +257,19 @@ export class TestRunner {
         this.testCasePhase.clear();
         this.testCaseStartedToTestCase.clear();
         this.testCaseErrors.clear();
+        this.hasAnyTestCaseStarted = false;
     }
 
     private async logStdErrPipe(pipe: Readable, items: vscode.TestItem[], testRun: vscode.TestRun) {
         const stdErrorLines = await this.readLogsFromStdErr(pipe);
         const errorMessages = this.createErrorMessagesFromStdErrorOutput(stdErrorLines);
 
-        for (const item of items) {
-            testRun.errored(item, errorMessages);
+        if (!this.hasAnyTestCaseStarted) {
+            // If errors occurred before any test case started, they are not related to test case failures
+            // Therefore report them separately
+            for (const item of items) {
+                testRun.errored(item, errorMessages);
+            }
         }
     }
 
@@ -371,6 +377,7 @@ export class TestRunner {
                     continue;
                 }
                 testRun.started(scenarioTestItem);
+                this.hasAnyTestCaseStarted = true;
             }
 
             if (objectData.testStepStarted) {
