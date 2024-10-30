@@ -70,27 +70,6 @@ export function activate(context: vscode.ExtensionContext) {
 
                     await discoverTests(gatherTestItems(test.children));
                 }
-
-                /*if (test.uri && !coveredLines.has(test.uri.toString())) {
-                    try {
-                        const lines = (
-                            await getContentFromFilesystem(test.uri)
-                        ).split("\n");
-                        coveredLines.set(
-                            test.uri.toString(),
-                            lines.map((lineText, lineNo) =>
-                                lineText.trim().length
-                                    ? new vscode.StatementCoverage(
-                                          0,
-                                          new vscode.Position(lineNo, 0)
-                                      )
-                                    : undefined
-                            )
-                        );
-                    } catch {
-                        // ignored
-                    }
-                }*/
             }
         };
 
@@ -105,44 +84,7 @@ export function activate(context: vscode.ExtensionContext) {
             } finally {
                 run.end();
             }
-
-            /*for (const { test, data } of queue) {
-                run.appendOutput(`Running ${test.id}\r\n`);
-                if (run.token.isCancellationRequested) {
-                    run.skipped(test);
-                } else {
-                    run.started(test);
-                    await data.runNew(test, run, debug);
-                }
-
-                //const lineNo = test.range!.start.line;
-                //const fileCoverage = coveredLines.get(test.uri!.toString());
-                //if (fileCoverage) {
-                //    fileCoverage[lineNo]!.executionCount++;
-                //}
-
-                run.appendOutput(`Completed ${test.id}\r\n`);
-            }*/
-
         };
-
-        /*run.coverageProvider = {
-            provideFileCoverage() {
-                const coverage: vscode.FileCoverage[] = [];
-                for (const [uri, statements] of coveredLines) {
-                    coverage.push(
-                        vscode.FileCoverage.fromDetails(
-                            vscode.Uri.parse(uri),
-                            statements.filter(
-                                (s): s is vscode.StatementCoverage => !!s
-                            )
-                        )
-                    );
-                }
- 
-                return coverage;
-            },
-        };*/
 
         discoverTests(request.include ?? gatherTestItems(ctrl.items)).then(runTestQueue);
     };
