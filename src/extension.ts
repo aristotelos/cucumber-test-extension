@@ -47,12 +47,6 @@ export function activate(context: vscode.ExtensionContext) {
 
         errors.clear();
 
-        // map of file uris to statements on each line:
-        /*const coveredLines = new Map<
-            string, // file uri
-            (vscode.StatementCoverage | undefined)[]
-        >();*/
-
         const discoverTests = async (tests: Iterable<vscode.TestItem>) => {
             for (const test of tests) {
                 if (request.exclude?.includes(test)) {
