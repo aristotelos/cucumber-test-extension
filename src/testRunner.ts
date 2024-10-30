@@ -227,9 +227,14 @@ export class TestRunner {
         this.logChannel.appendLine(`Root Directory: ${rootDirectory}`);
         const cucumberjsPath = path.normalize(path.join(rootDirectory, "node_modules/@cucumber/cucumber/bin/cucumber.js"));
 
+        const abortController = new AbortController();
+        testRun.token.onCancellationRequested(() => {
+            abortController.abort();
+        });
         const cucumberProcess = spawn(`node`, [...debugOptions, cucumberjsPath, ...itemsOptions, "--format", "message", ...profileOptions], {
             cwd: workingDirectory,
             env,
+            signal: abortController.signal,
         });
 
         this.logChannel.appendLine(`Started Process ${cucumberProcess.spawnfile}:    ${cucumberProcess.spawnargs}`);
@@ -251,7 +256,7 @@ export class TestRunner {
         return { success: cucumberProcess.exitCode === 0 };
     }
 
-    private async waitForExit(cucumberProcess: ChildProcess): Promise<void> {
+    private waitForExit(cucumberProcess: ChildProcess): Promise<void> {
         return new Promise((resolve) => {
             cucumberProcess.on("close", (code) => {
                 this.logChannel.appendLine(`Process exited with code ${code}`);
@@ -273,9 +278,9 @@ export class TestRunner {
 
     private async logStdErrPipe(pipe: Readable, items: vscode.TestItem[], testRun: vscode.TestRun) {
         const stdErrorLines = await this.readLogsFromStdErr(pipe);
-        const errorMessages = this.createErrorMessagesFromStdErrorOutput(stdErrorLines);
 
-        if (!this.hasAnyTestCaseStarted) {
+        if (!this.hasAnyTestCaseStarted && stdErrorLines.length > 0) {
+            const errorMessages = this.createErrorMessagesFromStdErrorOutput(stdErrorLines);
             // If errors occurred before any test case started, they are not related to test case failures
             // Therefore report them separately
             for (const item of items) {
