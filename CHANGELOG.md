@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Abort the cucumber-js process immediately when the test run is cancelled.
 - Make the file-level test item runnable too.
+- Fix reported duration of failed test when an assert failed.
 
 ## [0.7.5]
 
