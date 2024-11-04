@@ -17,7 +17,7 @@ import {
 import { handleError } from "./errorHandlers/testRunErrorHandler";
 import path = require("path");
 import { Readable } from "stream";
-import { normalizeDriveLetter } from "./util";
+import { getDurationMilliseconds, normalizeDriveLetter } from "./util";
 
 type RunnerData = {
     uri: string;
@@ -503,7 +503,7 @@ export class TestRunner {
                         msg.message += `Then('${stepInScenario.text}', function () {\n  return 'pending';\n});`;
                     }
 
-                    testRun.errored(step, msg, this.getDurationMilliseconds(stepResult));
+                    testRun.errored(step, msg, getDurationMilliseconds(stepResult.duration));
 
                     let errorsCount = this.testCaseErrors.get(testCase.id) ?? 0;
                     this.testCaseErrors.set(testCase.id, errorsCount + 1);
@@ -511,7 +511,7 @@ export class TestRunner {
                 break;
             case TestStepResultStatus.PASSED:
                 {
-                    testRun.passed(step, this.getDurationMilliseconds(stepResult));
+                    testRun.passed(step, getDurationMilliseconds(stepResult.duration));
                 }
                 break;
             case TestStepResultStatus.FAILED:
@@ -536,10 +536,6 @@ export class TestRunner {
         for (const item of this.flattenHierarchy(items)) {
             testRun.enqueued(item);
         }
-    }
-
-    private getDurationMilliseconds(stepResult: TestStepResult): number {
-        return stepResult.duration.seconds * 1000 + stepResult.duration.nanos / 1000000;
     }
 
     private async startDebuggingProcess(cucumberProcess: ChildProcessWithoutNullStreams, workspace: vscode.WorkspaceFolder, rootDirectory: string) {

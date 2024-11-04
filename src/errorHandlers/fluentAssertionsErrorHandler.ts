@@ -1,6 +1,7 @@
 import { TestStepResult } from "@cucumber/messages";
 import * as vscode from "vscode";
 import { ITestRunErrorHandler, registerHandler } from "./testRunErrorHandler";
+import { getDurationMilliseconds } from "../util";
 
 export default class FluentAssertionsErrorHandler implements ITestRunErrorHandler {
     canHandleError(result: TestStepResult): boolean {
@@ -30,9 +31,9 @@ export default class FluentAssertionsErrorHandler implements ITestRunErrorHandle
                 }
             }
 
-            options.failed(step, vscode.TestMessage.diff(message, expected.join("\n"), actual.join("\n")), result.duration.nanos / 1000000);
+            options.failed(step, vscode.TestMessage.diff(message, expected.join("\n"), actual.join("\n")), getDurationMilliseconds(result.duration));
         } else {
-            options.failed(step, new vscode.TestMessage(message));
+            options.failed(step, new vscode.TestMessage(message), getDurationMilliseconds(result.duration));
         }
     }
 }

@@ -1,3 +1,5 @@
+import { Duration } from "@cucumber/messages";
+
 const enum CharCode {
     upperA = 65,
     upperZ = 90,
@@ -18,4 +20,8 @@ export function normalizeDriveLetter(path: string): string {
     }
 
     return path;
+}
+
+export function getDurationMilliseconds(duration: Duration): number {
+    return duration.seconds * 1000 + duration.nanos / 1000000;
 }
