@@ -1,23 +1,11 @@
 import * as vscode from "vscode";
 import { ChildProcess, ChildProcessWithoutNullStreams, spawn } from "child_process";
 import { chunksToLinesAsync } from "@rauschma/stringio";
-import {
-    TestStepResultStatus,
-    TestCase as TestCaseMessage,
-    StepDefinition,
-    Pickle,
-    StepKeywordType,
-    Envelope,
-    Hook,
-    Feature,
-    Step,
-    TestStepFinished,
-    TestStepResult,
-} from "@cucumber/messages";
+import { TestStepResultStatus, TestCase as TestCaseMessage, StepDefinition, Pickle, StepKeywordType, Envelope, Hook, Feature, Step, TestStepFinished } from "@cucumber/messages";
 import { handleError } from "./errorHandlers/testRunErrorHandler";
-import path = require("path");
 import { Readable } from "stream";
 import { getDurationMilliseconds, normalizeDriveLetter } from "./util";
+import * as path from "path";
 
 type RunnerData = {
     uri: string;
@@ -43,7 +31,7 @@ export class TestRunner {
     private tryParseJson<T>(inputString: string): T | null {
         try {
             return JSON.parse(inputString);
-        } catch (e) {
+        } catch {
             return null;
         }
     }
@@ -243,7 +231,7 @@ export class TestRunner {
             await this.startDebuggingProcess(cucumberProcess, workspace, rootDirectory);
         }
 
-        var uriPrefix = this.fixUri(path.relative(workspace.uri.fsPath, workingDirectory));
+        let uriPrefix = this.fixUri(path.relative(workspace.uri.fsPath, workingDirectory));
         if (uriPrefix !== "" && !uriPrefix.endsWith("/")) {
             uriPrefix = uriPrefix + "/";
         }
@@ -467,7 +455,7 @@ export class TestRunner {
             const fullUri = workspace.uri.toString() + "/" + uriPrefix + this.fixUri(hook.sourceReference.uri!);
             handleError(stepResult, scenarioTestItem, fullUri, range, testRun, this.diagnosticCollection);
 
-            let errorsCount = this.testCaseErrors.get(testCase.id) ?? 0;
+            const errorsCount = this.testCaseErrors.get(testCase.id) ?? 0;
             this.testCaseErrors.set(testCase.id, errorsCount + 1);
             return;
         }
@@ -505,7 +493,7 @@ export class TestRunner {
 
                     testRun.errored(step, msg, getDurationMilliseconds(stepResult.duration));
 
-                    let errorsCount = this.testCaseErrors.get(testCase.id) ?? 0;
+                    const errorsCount = this.testCaseErrors.get(testCase.id) ?? 0;
                     this.testCaseErrors.set(testCase.id, errorsCount + 1);
                 }
                 break;
@@ -518,7 +506,7 @@ export class TestRunner {
                 {
                     handleError(stepResult, step, step.uri!.toString(), step.range!, testRun, this.diagnosticCollection);
 
-                    let errorsCount = this.testCaseErrors.get(testCase.id) ?? 0;
+                    const errorsCount = this.testCaseErrors.get(testCase.id) ?? 0;
                     this.testCaseErrors.set(testCase.id, errorsCount + 1);
                 }
                 break;
@@ -561,7 +549,7 @@ export class TestRunner {
     private getEnvironmentVariables(adapterConfig: vscode.WorkspaceConfiguration) {
         const processEnv = process.env;
 
-        const configEnv = adapterConfig.get<{ [prop: string]: any }>("env") ?? {};
+        const configEnv = adapterConfig.get<{ [prop: string]: unknown }>("env") ?? {};
         const env = { ...processEnv };
         for (const prop in configEnv) {
             const val = configEnv[prop];

@@ -8,14 +8,7 @@ export default class FluentAssertionsErrorHandler implements ITestRunErrorHandle
         return (result.message ?? "").startsWith("AssertionError [ERR_ASSERTION]");
     }
 
-    public handleError(
-        result: TestStepResult,
-        step: vscode.TestItem,
-        uri: string,
-        range: vscode.Range,
-        options: vscode.TestRun,
-        diagnosticCollection: vscode.DiagnosticCollection
-    ): void {
+    public handleError(result: TestStepResult, step: vscode.TestItem, uri: string, range: vscode.Range, options: vscode.TestRun): void {
         const lines = result.message!.split("\n");
         const message = lines[0];
         const expected: string[] = [];

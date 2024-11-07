@@ -2,7 +2,7 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from "vscode";
 import { TestRunner } from "./testRunner";
-import { getContentFromFilesystem, TestCase, testData, TestFile } from "./testTree";
+import { TestCase, testData, TestFile } from "./testTree";
 
 import "./errorHandlers/fluentAssertionsErrorHandler";
 
@@ -19,7 +19,7 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(errors);
 
     const fileChangedEmitter = new vscode.EventEmitter<vscode.Uri>();
-    const runHandler = (request: vscode.TestRunRequest, cancellation: vscode.CancellationToken) => {
+    const runHandler = (request: vscode.TestRunRequest) => {
         //if (!request.continuous) {
         return startTestRun(request, false);
         //}
@@ -37,7 +37,7 @@ export function activate(context: vscode.ExtensionContext) {
         cancellation.onCancellationRequested(() => l.dispose());*/
     };
 
-    const debugHandler = (request: vscode.TestRunRequest, cancellation: vscode.CancellationToken) => {
+    const debugHandler = (request: vscode.TestRunRequest) => {
         return startTestRun(request, true);
     };
 
