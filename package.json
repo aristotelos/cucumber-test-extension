@@ -64,25 +64,26 @@
         "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
         "compile-tests": "tsc -p . --outDir out",
         "pretest": "npm run compile-tests && npm run lint",
-        "lint": "eslint src --ext ts",
+        "lint": "eslint src",
         "test": "node ./out/test/runTest.js",
         "deploy": "vsce publish"
     },
     "devDependencies": {
+        "@eslint/js": "^9.14.0",
+        "@types/eslint__js": "^8.42.3",
         "@types/glob": "^8.0.1",
         "@types/mocha": "^10.0.9",
         "@types/node": "^20",
         "@types/vscode": "^1.95.0",
-        "@typescript-eslint/eslint-plugin": "^7.14.0",
-        "@typescript-eslint/parser": "^7.14.0",
         "@vscode/test-electron": "^2.4.1",
         "@vscode/vsce": "^3.2.1",
         "esbuild": "^0.24.0",
-        "eslint": "^8.33.0",
+        "eslint": "^8.57.1",
         "glob": "^8.1.0",
         "mocha": "^10.7.3",
         "npm-run-all": "^4.1.5",
-        "typescript": "^5.6.2"
+        "typescript": "^5.6.3",
+        "typescript-eslint": "^8.13.0"
     },
     "dependencies": {
         "@cucumber/gherkin": "^30.0.0",
