@@ -86,7 +86,7 @@
         "typescript-eslint": "^8.22.0"
     },
     "dependencies": {
-        "@cucumber/gherkin": "^30.0.0",
+        "@cucumber/gherkin": "^32.0.0",
         "@cucumber/messages": "^27.0.2",
         "@rauschma/stringio": "^1.4.0"
     }
