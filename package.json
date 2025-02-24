@@ -87,7 +87,7 @@
     },
     "dependencies": {
         "@cucumber/gherkin": "^30.0.0",
-        "@cucumber/messages": "^27.0.2",
+        "@cucumber/messages": "^27.2.0",
         "@rauschma/stringio": "^1.4.0"
     }
 }
